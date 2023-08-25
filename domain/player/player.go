@@ -1,7 +1,9 @@
 package player
 
 import (
+	"fmt"
 	"strings"
+	"sync"
 	"wordle/domain/game"
 	"wordle/domain/words"
 )
@@ -11,7 +13,7 @@ type Player struct {
 	ValidGuesses      words.WordList
 }
 
-func (player Player) GetNextGuess(isSixthTurn bool) (guess words.Word, evaluation ProposedGuessEvaluation) {
+func (player Player) GetNextGuess(isSixthTurn bool) (words.Word, ProposedGuessEvaluation) {
 
 	bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
 
@@ -23,15 +25,55 @@ func (player Player) GetNextGuess(isSixthTurn bool) (guess words.Word, evaluatio
 		return player.PossibleSolutions.Words[0], bestGuessEvaluation
 	}
 
-	for _, proposedGuess := range player.ValidGuesses.Words {
-		proposedGuessEvaluation := player.EvaluatePossibleGuess(proposedGuess)
+	bestGuess := player.identifyBestPossibleGuess(player.ValidGuesses.Words)
 
-		if proposedGuessEvaluation.isBetterThan(bestGuessEvaluation) {
-			bestGuessEvaluation = proposedGuessEvaluation
+	return bestGuess.ProposedGuess, bestGuess
+}
+
+type proposedGuessEvaluationContainer struct {
+	mu    sync.Mutex
+	value []ProposedGuessEvaluation
+}
+
+func (player Player) identifyBestPossibleGuess(validGuesses []words.Word) ProposedGuessEvaluation {
+
+	guessEvaluations := proposedGuessEvaluationContainer{value: make([]ProposedGuessEvaluation, 0, 1000)}
+
+	var wg sync.WaitGroup
+
+	for startOfBatch := 0; startOfBatch < len(validGuesses) - 1; startOfBatch = startOfBatch+1000 {
+		lengthOfBatch := min(1000, len(validGuesses) - startOfBatch -1) + startOfBatch // 1000, or the remainder of the list
+		wg.Add(1)
+		go evaluatePossibleGuesses(validGuesses[startOfBatch:lengthOfBatch], &guessEvaluations, &wg, player)
+	}
+
+	wg.Wait()
+
+	bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
+
+	for _, guessEvaluation := range guessEvaluations.value {
+		if guessEvaluation.isBetterThan(bestGuessEvaluation) {
+			bestGuessEvaluation = guessEvaluation
 		}
 	}
 
-	return bestGuessEvaluation.ProposedGuess, bestGuessEvaluation
+	return bestGuessEvaluation
+}
+
+func evaluatePossibleGuesses(proposedGuesses []words.Word, guessEvaluations *proposedGuessEvaluationContainer, wg *sync.WaitGroup, player Player) {
+
+	evaluations := make([]ProposedGuessEvaluation, 0, len(proposedGuesses))
+
+	for _, proposedGuess := range proposedGuesses {
+		proposedGuessEvaluation := player.EvaluatePossibleGuess(proposedGuess)
+		evaluations = append(evaluations, proposedGuessEvaluation)
+	}
+
+	guessEvaluations.mu.Lock()
+	guessEvaluations.value = append(guessEvaluations.value, evaluations...)
+	guessEvaluations.mu.Unlock()
+
+	wg.Done()
 }
 
 func (player Player) EvaluatePossibleGuess(possibleGuess words.Word) ProposedGuessEvaluation {
