@@ -1,7 +1,7 @@
 package player
 
 import (
-	"fmt"
+	"runtime"
 	"strings"
 	"sync"
 	"wordle/domain/game"
@@ -36,44 +36,7 @@ type proposedGuessEvaluationContainer struct {
 }
 
 func (player Player) identifyBestPossibleGuess(validGuesses []words.Word) ProposedGuessEvaluation {
-
-	guessEvaluations := proposedGuessEvaluationContainer{value: make([]ProposedGuessEvaluation, 0, 1000)}
-
-	var wg sync.WaitGroup
-
-	for startOfBatch := 0; startOfBatch < len(validGuesses) - 1; startOfBatch = startOfBatch+1000 {
-		lengthOfBatch := min(1000, len(validGuesses) - startOfBatch -1) + startOfBatch // 1000, or the remainder of the list
-		wg.Add(1)
-		go evaluatePossibleGuesses(validGuesses[startOfBatch:lengthOfBatch], &guessEvaluations, &wg, player)
-	}
-
-	wg.Wait()
-
-	bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
-
-	for _, guessEvaluation := range guessEvaluations.value {
-		if guessEvaluation.isBetterThan(bestGuessEvaluation) {
-			bestGuessEvaluation = guessEvaluation
-		}
-	}
-
-	return bestGuessEvaluation
-}
-
-func evaluatePossibleGuesses(proposedGuesses []words.Word, guessEvaluations *proposedGuessEvaluationContainer, wg *sync.WaitGroup, player Player) {
-
-	evaluations := make([]ProposedGuessEvaluation, 0, len(proposedGuesses))
-
-	for _, proposedGuess := range proposedGuesses {
-		proposedGuessEvaluation := player.EvaluatePossibleGuess(proposedGuess)
-		evaluations = append(evaluations, proposedGuessEvaluation)
-	}
-
-	guessEvaluations.mu.Lock()
-	guessEvaluations.value = append(guessEvaluations.value, evaluations...)
-	guessEvaluations.mu.Unlock()
-
-	wg.Done()
+	return player.fanOutFanIn(validGuesses)
 }
 
 func (player Player) EvaluatePossibleGuess(possibleGuess words.Word) ProposedGuessEvaluation {
@@ -114,4 +77,89 @@ func (player Player) GetPossibleSolutions() string {
 	}
 
 	return strings.Join(wordsAsStrings, ", ")
+}
+func fanoutGuessEvaluation(signalChannel <-chan bool, potentialGuesses []words.Word) <-chan words.Word {
+	fanoutChannel := make(chan words.Word)
+	go func() {
+		for _, potentialGuess := range potentialGuesses {
+			select {
+			case <-signalChannel:
+				return
+			case fanoutChannel <- potentialGuess:
+			}
+		}
+		close(fanoutChannel)
+	}()
+	return fanoutChannel
+}
+
+func (player Player) evaluatePotentialGuesses(signalChannel <-chan bool, fanoutChannel <-chan words.Word) <-chan ProposedGuessEvaluation {
+	faninChannel := make(chan ProposedGuessEvaluation)
+	go func() {
+		for potentialGuess := range fanoutChannel {
+			select {
+			case <-signalChannel:
+				return
+			case faninChannel <- player.EvaluatePossibleGuess(potentialGuess):
+			}
+		}
+		close(faninChannel)
+	}()
+	return faninChannel
+}
+
+func mergeChannelsToMultiplex(signalChannel <-chan bool, faninChannels ...<-chan ProposedGuessEvaluation) <-chan ProposedGuessEvaluation {
+	var wg sync.WaitGroup
+
+	wg.Add(len(faninChannels))
+	multiplexChannel := make(chan ProposedGuessEvaluation)
+	multiplex := func(c <-chan ProposedGuessEvaluation) {
+		defer wg.Done()
+		for i := range c {
+			select {
+			case <-signalChannel:
+				return
+			case multiplexChannel <- i:
+			}
+		}
+	}
+	for _, c := range faninChannels {
+		go multiplex(c)
+	}
+	go func() {
+		wg.Wait()
+		close(multiplexChannel)
+	}()
+	return multiplexChannel
+}
+
+func (player Player) fanOutFanIn(validGuesses []words.Word) ProposedGuessEvaluation {
+
+	// To enable the workers to be shut down, create a signal channel to tell them when to stop
+	signalChannel := make(chan bool)
+	defer close(signalChannel)
+
+	// To fan out the guesses to the workers, create a fan out channel
+	fanoutChannel := fanoutGuessEvaluation(signalChannel, validGuesses)
+
+	// To collate the results from the workers, create one fan in channel per worker
+	noOfWorkers := runtime.NumCPU() - 1
+	fanInChannels := make([]<-chan ProposedGuessEvaluation, noOfWorkers)
+
+	for i := 0; i < noOfWorkers; i++ {
+		fanInChannels[i] = player.evaluatePotentialGuesses(signalChannel, fanoutChannel)
+	}
+
+	// To multiplex the results from the workers, create a multiplex channel
+	multiplexChannel := mergeChannelsToMultiplex(signalChannel, fanInChannels...)
+
+	// To identify the best guess, iterate over the multiplex channel
+	bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
+
+	for proposedGuessEvaluation := range multiplexChannel {
+		if proposedGuessEvaluation.isBetterThan(bestGuessEvaluation) {
+			bestGuessEvaluation = proposedGuessEvaluation
+		}
+	}
+	return bestGuessEvaluation
 }
