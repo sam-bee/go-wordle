@@ -15,26 +15,23 @@ type ProposedGuessEvaluation struct {
 }
 
 func MakeProposedGuessEvaluation(
-	proposedGuess words.Word,
-	sizeOfCurrentShortlist int,
+	guess words.Word,
 	currrentShortlist []words.Word,
 ) ProposedGuessEvaluation {
 
 	isPotentialSolution := false
 
 	for _, wordInCurrentShortlist := range currrentShortlist {
-		if wordInCurrentShortlist.String() == proposedGuess.String() {
+		if wordInCurrentShortlist.String() == guess.String() {
 			isPotentialSolution = true
 		}
 	}
 
 	return ProposedGuessEvaluation{
-		proposedGuess,
-		sizeOfCurrentShortlist,
-		make(map[string]int),
-		"",
-		0.0,
-		isPotentialSolution,
+		Guess: guess,
+		shortlistSize: len(currrentShortlist),
+		potentialFeedbackCounts: make(map[string]int),
+		isPotentialSolution: isPotentialSolution,
 	}
 }
 
@@ -70,28 +67,24 @@ func (proposedGuessEvaluation *ProposedGuessEvaluation) isBetterThan(another Pro
 }
 
 func (proposedGuessEvaluation *ProposedGuessEvaluation) calculate() {
-	worstCaseScenario := struct {
+
+	type worstCaseScenario struct {
 		feedbackString string
 		count          int
-	}{
-		"",
-		0,
 	}
+	worst := worstCaseScenario{}
 
 	for potentialFeedbackString, potentialFeedbackCount := range proposedGuessEvaluation.potentialFeedbackCounts {
 
-		if potentialFeedbackCount > worstCaseScenario.count {
-			worstCaseScenario = struct {
-				feedbackString string
-				count          int
-			}{
-				potentialFeedbackString,
-				potentialFeedbackCount,
+		if potentialFeedbackCount > worst.count {
+			worst = worstCaseScenario {
+				feedbackString: potentialFeedbackString,
+				count: potentialFeedbackCount,
 			}
 		}
 
 	}
 
-	proposedGuessEvaluation.worstCaseShortlistCarryOverRatio = float64(worstCaseScenario.count) / float64(proposedGuessEvaluation.shortlistSize)
-	proposedGuessEvaluation.worstCaseScenarioFeedbackString = worstCaseScenario.feedbackString
+	proposedGuessEvaluation.worstCaseShortlistCarryOverRatio = float64(worst.count) / float64(proposedGuessEvaluation.shortlistSize)
+	proposedGuessEvaluation.worstCaseScenarioFeedbackString = worst.feedbackString
 }
