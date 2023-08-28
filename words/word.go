@@ -1,14 +1,21 @@
 package words
 
+import (
+	"fmt"
+)
+
 type Word struct {
-	Characters []rune
-	String     string
+	value string
 }
 
-func MakeWord(word string) Word {
-	return Word{Characters: []rune(word), String: word}
+func NewWord(value string) (w Word, err error) {
+	if len(value) != 5 {
+		return Word{}, fmt.Errorf("all words in a wordle game must be characters long, got '%s'", value)
+	}
+
+	return Word{value: value}, nil
 }
 
-func (w Word) Equals(another Word) bool {
-	return w.String == another.String
+func (w *Word) String() string {
+	return w.value
 }

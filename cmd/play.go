@@ -33,17 +33,27 @@ func init() {
 
 func playWordleGame(cmd *cobra.Command, solutionArgument string, writer io.Writer) error {
 
+	// To initialise the solution, parse command line argument
+	solution, err := words.NewWord(solutionArgument)
+	if (err != nil) {
+		return err
+	}
+
 	// To find out what our guesses might be, read guesses word list from file
 	fmt.Fprintln(writer, "Reading valid guesses from file...")
-	validGuessesWordList := words.GetValidGuessesWordList()
-	fmt.Fprintf(writer, "Found %v words\n", words.Count(validGuessesWordList))
+	validGuessesWordList, err := words.GetValidGuessesWordList()
+	if (err != nil) {
+		return err
+	}
+	fmt.Fprintf(writer, "Found %d words\n", len(validGuessesWordList))
 
 	// To find out what the solution might be, read guesses word list from file
 	fmt.Fprintln(writer, "Reading valid solutions from file...")
-	validSolutionsWordList := words.GetValidSolutionsWordList()
-	fmt.Fprintf(writer, "Found %v words\n", words.Count(validSolutionsWordList))
-
-	solution := words.MakeWord(solutionArgument)
+	validSolutionsWordList, err := words.GetValidSolutionsWordList()
+	if (err != nil) {
+		return err
+	}
+	fmt.Fprintf(writer, "Found %d words\n", len(validSolutionsWordList))
 
 	player := player.Player{PossibleSolutions: validSolutionsWordList, ValidGuesses: validGuessesWordList}
 
@@ -66,14 +76,14 @@ func playWordleGame(cmd *cobra.Command, solutionArgument string, writer io.Write
 
 func takeGuess(guessNo int, player *player.Player, solution words.Word) (won bool, guess words.Word, feedback game.Feedback, evaluation player.ProposedGuessEvaluation) {
 	guess, evaluation = player.GetNextGuess(guessNo == 6)
-	won = guess.Equals(solution)
+	won = guess.String() == solution.String()
 	feedback = game.GetFeedback(solution, guess)
 	player.TakeFeedbackFromGuess(guess, feedback)
 	return
 }
 
 func printTurn(guess words.Word, feedback game.Feedback, guessNo int) {
-	fmt.Println("Guess number " + strconv.Itoa(guessNo) + ": " + guess.String)
+	fmt.Println("Guess number " + strconv.Itoa(guessNo) + ": " + guess.String())
 	fmt.Println("Feedback from guess was: " + feedback.String())
 	fmt.Println()
 }
@@ -90,7 +100,7 @@ func printPreAnalysis(player player.Player) {
 
 func printEvaluation(evaluation player.ProposedGuessEvaluation) {
 	if !evaluation.IsNullEvaluation() {
-		fmt.Println("The next guess should be " + evaluation.ProposedGuess.String)
+		fmt.Println("The next guess should be " + evaluation.ProposedGuess.String())
 		fmt.Println("Worst-case scenario for proposed guess is the feedback " + evaluation.GetWorstCaseScenarioFeedbackString() + ". Carry-over ratio for possible solutions list would be " + evaluation.GetWorstCaseShortlistCarryOverRatioString())
 	}
 }

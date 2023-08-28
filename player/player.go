@@ -8,32 +8,32 @@ import (
 )
 
 type Player struct {
-	PossibleSolutions words.WordList
-	ValidGuesses      words.WordList
+	PossibleSolutions []words.Word
+	ValidGuesses      []words.Word
 }
 
 func (player Player) GetNextGuess(isSixthTurn bool) (words.Word, ProposedGuessEvaluation) {
 
 	bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
 
-	if player.PossibleSolutions.Count() == 1 {
-		return player.PossibleSolutions.Words[0], bestGuessEvaluation
+	if len(player.PossibleSolutions) == 1 {
+		return player.PossibleSolutions[0], bestGuessEvaluation
 	}
 
 	if isSixthTurn {
-		return player.PossibleSolutions.Words[0], bestGuessEvaluation
+		return player.PossibleSolutions[0], bestGuessEvaluation
 	}
 
-	bestGuess := player.identifyBestPossibleGuess(player.ValidGuesses.Words)
+	bestGuess := player.identifyBestPossibleGuess(player.ValidGuesses)
 
 	return bestGuess.ProposedGuess, bestGuess
 }
 
 func (player Player) EvaluatePossibleGuess(possibleGuess words.Word) ProposedGuessEvaluation {
 
-	proposedGuessEvaluation := MakeProposedGuessEvaluation(possibleGuess, player.PossibleSolutions.Count(), player.PossibleSolutions)
+	proposedGuessEvaluation := MakeProposedGuessEvaluation(possibleGuess, len(player.PossibleSolutions), player.PossibleSolutions)
 
-	for _, possibleSolution := range player.PossibleSolutions.Words {
+	for _, possibleSolution := range player.PossibleSolutions {
 		feedback := game.GetFeedback(possibleSolution, possibleGuess)
 		proposedGuessEvaluation.AddPossibleOutcome(possibleSolution, feedback)
 	}
@@ -45,25 +45,25 @@ func (player *Player) TakeFeedbackFromGuess(word words.Word, feedback game.Feedb
 
 	var newShortlist []words.Word
 
-	for _, solutionStillOnShortlist := range player.PossibleSolutions.Words {
+	for _, solutionStillOnShortlist := range player.PossibleSolutions {
 		feedbackIfThisWordWereSolution := game.GetFeedback(solutionStillOnShortlist, word)
 		if feedbackIfThisWordWereSolution.Equals(feedback) {
 			newShortlist = append(newShortlist, solutionStillOnShortlist)
 		}
 	}
 
-	player.PossibleSolutions = words.WordList{Words: newShortlist}
+	player.PossibleSolutions = newShortlist
 }
 
 func (player Player) GetNoOfPossibleSolutions() int {
-	return player.PossibleSolutions.Count()
+	return len(player.PossibleSolutions)
 }
 
 func (player Player) GetPossibleSolutions() string {
 
 	var wordsAsStrings []string
-	for _, word := range player.PossibleSolutions.Words {
-		wordsAsStrings = append(wordsAsStrings, word.String)
+	for _, word := range player.PossibleSolutions {
+		wordsAsStrings = append(wordsAsStrings, word.String())
 	}
 
 	return strings.Join(wordsAsStrings, ", ")

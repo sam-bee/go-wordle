@@ -26,12 +26,12 @@ func GetFeedback(solution words.Word, guess words.Word) Feedback {
 }
 
 func getFeedbackColour(solution words.Word, guess words.Word, index int) FeedbackColour {
-	if solution.Characters[index] == guess.Characters[index] {
+	if solution.String()[index] == guess.String()[index] {
 		return Green
 	}
 
-	for _, solutionCharacter := range solution.Characters {
-		if solutionCharacter == guess.Characters[index] {
+	for j := 0; j < len(solution.String()); j++ {
+		if solution.String()[j] == guess.String()[index] && j != index{
 			return Yellow
 		}
 	}
