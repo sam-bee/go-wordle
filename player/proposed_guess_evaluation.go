@@ -39,7 +39,7 @@ func MakeProposedGuessEvaluation(
 	}
 }
 
-func (proposedGuessEvaluation ProposedGuessEvaluation) AddPossibleOutcome(possibleSolution words.Word, feedback game.Feedback) {
+func (proposedGuessEvaluation *ProposedGuessEvaluation) AddPossibleOutcome(possibleSolution words.Word, feedback game.Feedback) {
 	proposedGuessEvaluation.potentialFeedbackCounts[feedback.String()] += 1
 }
 
@@ -57,7 +57,7 @@ func (proposedGuessEvaluation *ProposedGuessEvaluation) getWorstCaseShortlistCar
 	return proposedGuessEvaluation.worstCaseShortlistCarryOverRatio
 }
 
-func (proposedGuessEvaluation ProposedGuessEvaluation) isBetterThan(another ProposedGuessEvaluation) bool {
+func (proposedGuessEvaluation *ProposedGuessEvaluation) isBetterThan(another ProposedGuessEvaluation) bool {
 	if proposedGuessEvaluation.getWorstCaseShortlistCarryOverRatio() < another.getWorstCaseShortlistCarryOverRatio() {
 		return true
 	}
@@ -97,10 +97,10 @@ func (proposedGuessEvaluation *ProposedGuessEvaluation) calculate() {
 	proposedGuessEvaluation.worstCaseScenarioFeedbackString = worstCaseScenario.feedbackString
 }
 
-func (proposedGuessEvaluation ProposedGuessEvaluation) GetWorstCaseShortlistCarryOverRatioString() string {
+func (proposedGuessEvaluation *ProposedGuessEvaluation) GetWorstCaseShortlistCarryOverRatioString() string {
 	return fmt.Sprintf("%.2f", 100*proposedGuessEvaluation.getWorstCaseShortlistCarryOverRatio()) + "%"
 }
 
-func (proposedGuessEvaluation ProposedGuessEvaluation) IsNullEvaluation() bool {
+func (proposedGuessEvaluation *ProposedGuessEvaluation) IsNullEvaluation() bool {
 	return proposedGuessEvaluation.worstCaseShortlistCarryOverRatio == 1.0
 }
