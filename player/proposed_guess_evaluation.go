@@ -7,8 +7,8 @@ import (
 )
 
 type ProposedGuessEvaluation struct {
-	SizeOfCurrentShortlist           int
-	ProposedGuess                    words.Word
+	Guess                            words.Word
+	shortlistSize                    int
 	potentialFeedbackCounts          map[string]int
 	worstCaseScenarioFeedbackString  string
 	worstCaseShortlistCarryOverRatio float64
@@ -30,8 +30,8 @@ func MakeProposedGuessEvaluation(
 	}
 
 	return ProposedGuessEvaluation{
-		sizeOfCurrentShortlist,
 		proposedGuess,
+		sizeOfCurrentShortlist,
 		make(map[string]int),
 		"",
 		0.0,
@@ -93,14 +93,10 @@ func (proposedGuessEvaluation *ProposedGuessEvaluation) calculate() {
 
 	}
 
-	proposedGuessEvaluation.worstCaseShortlistCarryOverRatio = float64(worstCaseScenario.count) / float64(proposedGuessEvaluation.SizeOfCurrentShortlist)
+	proposedGuessEvaluation.worstCaseShortlistCarryOverRatio = float64(worstCaseScenario.count) / float64(proposedGuessEvaluation.shortlistSize)
 	proposedGuessEvaluation.worstCaseScenarioFeedbackString = worstCaseScenario.feedbackString
 }
 
 func (proposedGuessEvaluation *ProposedGuessEvaluation) GetWorstCaseShortlistCarryOverRatioString() string {
 	return fmt.Sprintf("%.2f", 100*proposedGuessEvaluation.getWorstCaseShortlistCarryOverRatio()) + "%"
-}
-
-func (proposedGuessEvaluation *ProposedGuessEvaluation) IsNullEvaluation() bool {
-	return proposedGuessEvaluation.worstCaseShortlistCarryOverRatio == 1.0
 }

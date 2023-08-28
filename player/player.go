@@ -12,7 +12,7 @@ type Player struct {
 	ValidGuesses      []words.Word
 }
 
-func (player *Player) GetNextGuess(isSixthTurn bool) (words.Word, ProposedGuessEvaluation) {
+func (player *Player) GetNextGuess(lastTurn bool) (words.Word, ProposedGuessEvaluation) {
 
 	bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
 
@@ -20,21 +20,21 @@ func (player *Player) GetNextGuess(isSixthTurn bool) (words.Word, ProposedGuessE
 		return player.PossibleSolutions[0], bestGuessEvaluation
 	}
 
-	if isSixthTurn {
+	if lastTurn {
 		return player.PossibleSolutions[0], bestGuessEvaluation
 	}
 
 	bestGuess := player.identifyBestPossibleGuess(player.ValidGuesses)
 
-	return bestGuess.ProposedGuess, bestGuess
+	return bestGuess.Guess, bestGuess
 }
 
-func (player *Player) EvaluatePossibleGuess(possibleGuess words.Word) ProposedGuessEvaluation {
+func (player *Player) EvaluatePossibleGuess(guess words.Word) ProposedGuessEvaluation {
 
-	proposedGuessEvaluation := MakeProposedGuessEvaluation(possibleGuess, len(player.PossibleSolutions), player.PossibleSolutions)
+	proposedGuessEvaluation := MakeProposedGuessEvaluation(guess, len(player.PossibleSolutions), player.PossibleSolutions)
 
 	for _, possibleSolution := range player.PossibleSolutions {
-		feedback := game.GetFeedback(possibleSolution, possibleGuess)
+		feedback := game.GetFeedback(possibleSolution, guess)
 		proposedGuessEvaluation.AddPossibleOutcome(possibleSolution, feedback)
 	}
 
@@ -43,16 +43,16 @@ func (player *Player) EvaluatePossibleGuess(possibleGuess words.Word) ProposedGu
 
 func (player *Player) TakeFeedbackFromGuess(word words.Word, feedback game.Feedback) {
 
-	var newShortlist []words.Word
+	var shortlist []words.Word
 
 	for _, solutionStillOnShortlist := range player.PossibleSolutions {
 		feedbackIfThisWordWereSolution := game.GetFeedback(solutionStillOnShortlist, word)
 		if feedbackIfThisWordWereSolution.Equals(feedback) {
-			newShortlist = append(newShortlist, solutionStillOnShortlist)
+			shortlist = append(shortlist, solutionStillOnShortlist)
 		}
 	}
 
-	player.PossibleSolutions = newShortlist
+	player.PossibleSolutions = shortlist
 }
 
 func (player *Player) GetNoOfPossibleSolutions() int {
@@ -61,19 +61,19 @@ func (player *Player) GetNoOfPossibleSolutions() int {
 
 func (player *Player) GetPossibleSolutions() string {
 
-	var wordsAsStrings []string
+	var words []string
 	for _, word := range player.PossibleSolutions {
-		wordsAsStrings = append(wordsAsStrings, word.String())
+		words = append(words, word.String())
 	}
 
-	return strings.Join(wordsAsStrings, ", ")
+	return strings.Join(words, ", ")
 }
 
 func fanoutGuessEvaluation(potentialGuesses []words.Word) <-chan words.Word {
 	fanoutChannel := make(chan words.Word)
 	go func() {
-		for _, potentialGuess := range potentialGuesses {
-			fanoutChannel <- potentialGuess
+		for _, g := range potentialGuesses {
+			fanoutChannel <- g
 		}
 		close(fanoutChannel)
 	}()
@@ -84,16 +84,16 @@ func (player *Player) evaluatePotentialGuesses(fanoutChannel <-chan words.Word) 
 	faninChannel := make(chan ProposedGuessEvaluation)
 	go func() {
 
-		bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
+		bestGuess := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
 
-		for proposedGuess := range fanoutChannel {
-			proposedGuessEvaluation := player.EvaluatePossibleGuess(proposedGuess)
-			if proposedGuessEvaluation.isBetterThan(bestGuessEvaluation) {
-				bestGuessEvaluation = proposedGuessEvaluation
+		for word := range fanoutChannel {
+			evaluation := player.EvaluatePossibleGuess(word)
+			if evaluation.isBetterThan(bestGuess) {
+				bestGuess = evaluation
 			}
 		}
 
-		faninChannel <- bestGuessEvaluation
+		faninChannel <- bestGuess
 		close(faninChannel)
 	}()
 	return faninChannel
@@ -105,7 +105,7 @@ func (player *Player) identifyBestPossibleGuess(validGuesses []words.Word) Propo
 	fanoutChannel := fanoutGuessEvaluation(validGuesses)
 
 	// To collate the results from the workers, create one fan in channel per worker
-	noOfWorkers := max(runtime.NumCPU() - 1, 1)
+	noOfWorkers := max(runtime.NumCPU()-1, 1)
 	fanInChannels := make([]<-chan ProposedGuessEvaluation, noOfWorkers)
 
 	for i := 0; i < noOfWorkers; i++ {
@@ -113,14 +113,14 @@ func (player *Player) identifyBestPossibleGuess(validGuesses []words.Word) Propo
 	}
 
 	// To identify the best guess from any of the workers, loop through their channels
-	bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
+	best := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
 	for i := range fanInChannels {
-		for proposedGuessEvaluation := range fanInChannels[i] {
-			if proposedGuessEvaluation.isBetterThan(bestGuessEvaluation) {
-				bestGuessEvaluation = proposedGuessEvaluation
+		for guess := range fanInChannels[i] {
+			if guess.isBetterThan(best) {
+				best = guess
 			}
 		}
 	}
 
-	return bestGuessEvaluation
+	return best
 }
