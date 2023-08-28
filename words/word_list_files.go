@@ -1,42 +1,29 @@
 package words
 
 import (
-	"bufio"
-	"fmt"
-	"io"
-	"os"
+	_ "embed"
+	"strings"
 )
 
-const wordListValidGuessesFile = "./words/data/wordlist-valid-guesses.csv"
-const wordListValidSolutionsFile = "./words/data/wordlist-valid-solutions.csv"
+//go:embed data/wordlist-valid-guesses.csv
+var guessesFile string
 
-func GetValidGuessesWordList(writer io.Writer) (WordList, error) {
-	fmt.Fprintf(writer, "Reading from file: %s\n", wordListValidGuessesFile)
-	return makeWordListFromFile(wordListValidGuessesFile)
+//go:embed data/wordlist-valid-solutions.csv
+var solutionsFile string
+
+func GetValidGuessesWordList() (WordList) {
+	return makeWordListFromString(guessesFile)
 }
 
-func GetValidSolutionsWordList(writer io.Writer) (WordList, error) {
-	fmt.Fprintf(writer, "Reading from file: %s\n", wordListValidSolutionsFile)
-	return makeWordListFromFile(wordListValidSolutionsFile)
+func GetValidSolutionsWordList() (WordList) {
+	return makeWordListFromString(solutionsFile)
 }
 
-func makeWordListFromFile(filename string) (WordList, error) {
-
-	// To prepare to read the contents, open the file
-	file, err := os.Open(filename)
-	if err != nil {
-		return WordList{}, err
+func makeWordListFromString(s string) WordList {
+	lines := strings.Split(s, "\n")
+	words := make([]Word, 0)
+	for _, line := range lines {
+		words = append(words, MakeWord(line))
 	}
-	defer file.Close()
-
-	// To provide a list of Words in the file, scan its contents
-	wordsFromFile := make([]Word, 0)
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		text := scanner.Text()
-		word := MakeWord(text)
-		wordsFromFile = append(wordsFromFile, word)
-	}
-	return WordList{Words: wordsFromFile}, nil
+	return WordList{Words: words}
 }
