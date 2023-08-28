@@ -1,7 +1,6 @@
 package player
 
 import (
-	"fmt"
 	"wordle/game"
 	"wordle/words"
 )
@@ -50,7 +49,7 @@ func (proposedGuessEvaluation *ProposedGuessEvaluation) GetWorstCaseScenarioFeed
 	return proposedGuessEvaluation.worstCaseScenarioFeedbackString
 }
 
-func (proposedGuessEvaluation *ProposedGuessEvaluation) getWorstCaseShortlistCarryOverRatio() float64 {
+func (proposedGuessEvaluation *ProposedGuessEvaluation) GetWorstCaseShortlistCarryOverRatio() float64 {
 	if proposedGuessEvaluation.worstCaseShortlistCarryOverRatio == 0.0 {
 		proposedGuessEvaluation.calculate()
 	}
@@ -58,10 +57,10 @@ func (proposedGuessEvaluation *ProposedGuessEvaluation) getWorstCaseShortlistCar
 }
 
 func (proposedGuessEvaluation *ProposedGuessEvaluation) isBetterThan(another ProposedGuessEvaluation) bool {
-	if proposedGuessEvaluation.getWorstCaseShortlistCarryOverRatio() < another.getWorstCaseShortlistCarryOverRatio() {
+	if proposedGuessEvaluation.GetWorstCaseShortlistCarryOverRatio() < another.GetWorstCaseShortlistCarryOverRatio() {
 		return true
 	}
-	if proposedGuessEvaluation.getWorstCaseShortlistCarryOverRatio() > another.getWorstCaseShortlistCarryOverRatio() {
+	if proposedGuessEvaluation.GetWorstCaseShortlistCarryOverRatio() > another.GetWorstCaseShortlistCarryOverRatio() {
 		return false
 	}
 	if proposedGuessEvaluation.isPotentialSolution && !another.isPotentialSolution {
@@ -95,8 +94,4 @@ func (proposedGuessEvaluation *ProposedGuessEvaluation) calculate() {
 
 	proposedGuessEvaluation.worstCaseShortlistCarryOverRatio = float64(worstCaseScenario.count) / float64(proposedGuessEvaluation.shortlistSize)
 	proposedGuessEvaluation.worstCaseScenarioFeedbackString = worstCaseScenario.feedbackString
-}
-
-func (proposedGuessEvaluation *ProposedGuessEvaluation) GetWorstCaseShortlistCarryOverRatioString() string {
-	return fmt.Sprintf("%.2f", 100*proposedGuessEvaluation.getWorstCaseShortlistCarryOverRatio()) + "%"
 }

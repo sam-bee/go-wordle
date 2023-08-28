@@ -3,11 +3,9 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"strconv"
 	"wordle/game"
 	"wordle/player"
 	"wordle/words"
-
 	"github.com/spf13/cobra"
 )
 
@@ -54,7 +52,7 @@ func playWordleGame(cmd *cobra.Command, solutionArgument string, writer io.Write
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(writer, "Found %d words\n", len(validSolutionsWordList))
+	fmt.Fprintf(writer, "Found %d words\n\n", len(validSolutionsWordList))
 
 	player := player.Player{PossibleSolutions: validSolutionsWordList, ValidGuesses: validGuessesWordList}
 
@@ -62,15 +60,15 @@ func playWordleGame(cmd *cobra.Command, solutionArgument string, writer io.Write
 	won := false
 
 	for turn <= 6 && !won {
-		printPreAnalysis(player)
+		printPreAnalysis(writer, player)
 		guessWasSolution, guess, feedback, evaluation := takeGuess(turn, &player, solution)
-		printEvaluation(evaluation)
+		printEvaluation(writer, evaluation, player)
 		won = guessWasSolution
-		printTurn(guess, feedback, turn)
+		printTurn(writer, guess, feedback, turn)
 		turn += 1
 	}
 
-	printOutcome(won, turn-1)
+	printOutcome(writer, won, turn-1)
 	return nil
 }
 
@@ -82,32 +80,37 @@ func takeGuess(guessNo int, player *player.Player, solution words.Word) (won boo
 	return
 }
 
-func printTurn(guess words.Word, feedback game.Feedback, guessNo int) {
-	fmt.Println("Guess number " + strconv.Itoa(guessNo) + ": " + guess.String())
-	fmt.Println("Feedback from guess was: " + feedback.String())
-	fmt.Println()
+func printTurn(writer io.Writer, guess words.Word, feedback game.Feedback, guessNo int) {
+	fmt.Fprintf(writer, "Guess number %d: %q\n", guessNo, guess.String())
+	fmt.Fprintf(writer, "Feedback from guess was: %q\n", feedback.String())
+	fmt.Fprintln(writer)
 }
 
-func printPreAnalysis(player player.Player) {
+func printPreAnalysis(writer io.Writer, player player.Player) {
 	noOfPossibleSolutions := player.GetNoOfPossibleSolutions()
-	fmt.Print("There are currently " + strconv.Itoa(noOfPossibleSolutions) + " possible solutions")
+	fmt.Fprintf(writer, "There are currently %d possible solutions\n", player.GetNoOfPossibleSolutions())
 	if noOfPossibleSolutions <= 10 {
-		fmt.Println(" [" + player.GetPossibleSolutions() + "]")
-	} else {
-		fmt.Println()
+		fmt.Fprintf(writer, "The remaining possible solutions are: [%s]\n", player.GetPossibleSolutions())
 	}
 }
 
-func printEvaluation(evaluation player.ProposedGuessEvaluation) {
-	fmt.Println("The next guess should be " + evaluation.Guess.String())
-	fmt.Println("Worst-case scenario for proposed guess is the feedback " + evaluation.GetWorstCaseScenarioFeedbackString() + ". Carry-over ratio for possible solutions list would be " + evaluation.GetWorstCaseShortlistCarryOverRatioString())
+func printEvaluation(writer io.Writer, evaluation player.ProposedGuessEvaluation, player player.Player) {
+	fmt.Fprintf(writer, "The next guess should be %q\n", evaluation.Guess.String())
+
+	if player.GetNoOfPossibleSolutions() > 1 {
+		fmt.Fprintf(
+			writer, "Worst-case scenario for proposed guess is the feedback %q. Carry-over ratio for possible solutions list would be %.2f%%\n",
+			evaluation.GetWorstCaseScenarioFeedbackString(),
+			100 * evaluation.GetWorstCaseShortlistCarryOverRatio(),
+		)
+	}
 }
 
-func printOutcome(won bool, turnNumber int) {
+func printOutcome(writer io.Writer, won bool, turnNumber int) {
 	if won {
-		fmt.Println("Won the Wordle in " + strconv.Itoa(turnNumber) + " turns")
+		fmt.Fprintf(writer, "Won the Wordle in %d turns", turnNumber)
 	} else {
-		fmt.Println("Lost the Wordle after 6 turns :-(")
+		fmt.Fprintln(writer, "Lost the Wordle after 6 turns :-(")
 	}
-	fmt.Println()
+	fmt.Fprintln(writer)
 }
