@@ -14,14 +14,8 @@ type Player struct {
 
 func (player *Player) GetNextGuess(lastTurn bool) (words.Word, ProposedGuessEvaluation) {
 
-	bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
-
-	if len(player.PossibleSolutions) == 1 {
-		return player.PossibleSolutions[0], bestGuessEvaluation
-	}
-
-	if lastTurn {
-		return player.PossibleSolutions[0], bestGuessEvaluation
+	if len(player.PossibleSolutions) == 1 || lastTurn {
+		return player.PossibleSolutions[0], ProposedGuessEvaluation{Guess: player.PossibleSolutions[0]}
 	}
 
 	bestGuess := player.identifyBestPossibleGuess(player.ValidGuesses)
