@@ -105,7 +105,7 @@ func (player Player) identifyBestPossibleGuess(validGuesses []words.Word) Propos
 	fanoutChannel := fanoutGuessEvaluation(validGuesses)
 
 	// To collate the results from the workers, create one fan in channel per worker
-	noOfWorkers := runtime.NumCPU() - 1
+	noOfWorkers := max(runtime.NumCPU() - 1, 1)
 	fanInChannels := make([]<-chan ProposedGuessEvaluation, noOfWorkers)
 
 	for i := 0; i < noOfWorkers; i++ {
