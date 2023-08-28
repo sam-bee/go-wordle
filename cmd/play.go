@@ -8,7 +8,6 @@ import (
 	"wordle/game"
 	"wordle/player"
 	"wordle/words"
-	"wordle/infrastructure"
 )
 
 // playCmd represents the play command
@@ -36,7 +35,7 @@ func playWordleGame(cmd *cobra.Command, solutionArgument string, writer io.Write
 
 	// To find out what our guesses might be, read guesses word list from file
 	fmt.Fprintln(writer, "Reading valid guesses from file...")
-	validGuessesWordList, err := infrastructure.GetValidGuessesWordList(writer)
+	validGuessesWordList, err := words.GetValidGuessesWordList(writer)
 	if (err != nil) {
 		return err
 	}
@@ -44,7 +43,7 @@ func playWordleGame(cmd *cobra.Command, solutionArgument string, writer io.Write
 
 	// To find out what the solution might be, read guesses word list from file
 	fmt.Fprintln(writer, "Reading valid solutions from file...")
-	validSolutionsWordList, err := infrastructure.GetValidSolutionsWordList(writer)
+	validSolutionsWordList, err := words.GetValidSolutionsWordList(writer)
 	if (err != nil) {
 		return err
 	}
