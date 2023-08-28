@@ -148,16 +148,15 @@ func (player Player) identifyBestPossibleGuess(validGuesses []words.Word) Propos
 		fanInChannels[i] = player.evaluatePotentialGuesses(signalChannel, fanoutChannel)
 	}
 
-	// To multiplex the results from the workers, create a multiplex channel
-	multiplexChannel := mergeChannelsToMultiplex(signalChannel, fanInChannels...)
-
-	// To identify the best guess, iterate over the multiplex channel
+	// To identify the best guess from any of the workers, loop through their channels
 	bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
-
-	for proposedGuessEvaluation := range multiplexChannel {
-		if proposedGuessEvaluation.isBetterThan(bestGuessEvaluation) {
-			bestGuessEvaluation = proposedGuessEvaluation
+	for i := range fanInChannels {
+		for proposedGuessEvaluation := range fanInChannels[i] {
+			if proposedGuessEvaluation.isBetterThan(bestGuessEvaluation) {
+				bestGuessEvaluation = proposedGuessEvaluation
+			}
 		}
 	}
+
 	return bestGuessEvaluation
 }
