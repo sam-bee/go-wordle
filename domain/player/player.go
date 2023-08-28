@@ -74,14 +74,12 @@ func (player Player) GetPossibleSolutions() string {
 
 	return strings.Join(wordsAsStrings, ", ")
 }
-func fanoutGuessEvaluation(signalChannel <-chan struct{}, potentialGuesses []words.Word) <-chan words.Word {
+func fanoutGuessEvaluation(potentialGuesses []words.Word) <-chan words.Word {
 	fanoutChannel := make(chan words.Word)
 	go func() {
 		for _, potentialGuess := range potentialGuesses {
 			select {
-			case <-signalChannel:
-				return
-			case fanoutChannel <- potentialGuess:
+				case fanoutChannel <- potentialGuess:
 			}
 		}
 		close(fanoutChannel)
@@ -136,7 +134,7 @@ func (player Player) identifyBestPossibleGuess(validGuesses []words.Word) Propos
 	defer close(signalChannel)
 
 	// To fan out the guesses to the workers, create a fan out channel
-	fanoutChannel := fanoutGuessEvaluation(signalChannel, validGuesses)
+	fanoutChannel := fanoutGuessEvaluation(validGuesses)
 
 	// To collate the results from the workers, create one fan in channel per worker
 	noOfWorkers := runtime.NumCPU() - 1
