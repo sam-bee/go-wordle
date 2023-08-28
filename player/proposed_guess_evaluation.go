@@ -14,10 +14,7 @@ type ProposedGuessEvaluation struct {
 	isPotentialSolution              bool
 }
 
-func MakeProposedGuessEvaluation(
-	guess words.Word,
-	currrentShortlist []words.Word,
-) ProposedGuessEvaluation {
+func MakeProposedGuessEvaluation(guess words.Word, currrentShortlist []words.Word) ProposedGuessEvaluation {
 
 	isPotentialSolution := false
 
