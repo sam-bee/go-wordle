@@ -39,7 +39,7 @@ func getFeedbackColour(solution words.Word, guess words.Word, index int) Feedbac
 	return Grey
 }
 
-func (f Feedback) String() string {
+func (f *Feedback) String() string {
 	feedbackString := ""
 	for _, colour := range f.FeedbackColours {
 		switch colour {
@@ -54,6 +54,6 @@ func (f Feedback) String() string {
 	return feedbackString
 }
 
-func (f Feedback) Equals(another Feedback) bool {
+func (f *Feedback) Equals(another Feedback) bool {
 	return f.String() == another.String()
 }

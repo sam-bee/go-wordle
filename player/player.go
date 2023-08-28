@@ -12,7 +12,7 @@ type Player struct {
 	ValidGuesses      []words.Word
 }
 
-func (player Player) GetNextGuess(isSixthTurn bool) (words.Word, ProposedGuessEvaluation) {
+func (player *Player) GetNextGuess(isSixthTurn bool) (words.Word, ProposedGuessEvaluation) {
 
 	bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
 
@@ -29,7 +29,7 @@ func (player Player) GetNextGuess(isSixthTurn bool) (words.Word, ProposedGuessEv
 	return bestGuess.ProposedGuess, bestGuess
 }
 
-func (player Player) EvaluatePossibleGuess(possibleGuess words.Word) ProposedGuessEvaluation {
+func (player *Player) EvaluatePossibleGuess(possibleGuess words.Word) ProposedGuessEvaluation {
 
 	proposedGuessEvaluation := MakeProposedGuessEvaluation(possibleGuess, len(player.PossibleSolutions), player.PossibleSolutions)
 
@@ -55,11 +55,11 @@ func (player *Player) TakeFeedbackFromGuess(word words.Word, feedback game.Feedb
 	player.PossibleSolutions = newShortlist
 }
 
-func (player Player) GetNoOfPossibleSolutions() int {
+func (player *Player) GetNoOfPossibleSolutions() int {
 	return len(player.PossibleSolutions)
 }
 
-func (player Player) GetPossibleSolutions() string {
+func (player *Player) GetPossibleSolutions() string {
 
 	var wordsAsStrings []string
 	for _, word := range player.PossibleSolutions {
@@ -80,7 +80,7 @@ func fanoutGuessEvaluation(potentialGuesses []words.Word) <-chan words.Word {
 	return fanoutChannel
 }
 
-func (player Player) evaluatePotentialGuesses(fanoutChannel <-chan words.Word) <-chan ProposedGuessEvaluation {
+func (player *Player) evaluatePotentialGuesses(fanoutChannel <-chan words.Word) <-chan ProposedGuessEvaluation {
 	faninChannel := make(chan ProposedGuessEvaluation)
 	go func() {
 
@@ -99,7 +99,7 @@ func (player Player) evaluatePotentialGuesses(fanoutChannel <-chan words.Word) <
 	return faninChannel
 }
 
-func (player Player) identifyBestPossibleGuess(validGuesses []words.Word) ProposedGuessEvaluation {
+func (player *Player) identifyBestPossibleGuess(validGuesses []words.Word) ProposedGuessEvaluation {
 
 	// To fan out the guesses to the workers, create a fan out channel
 	fanoutChannel := fanoutGuessEvaluation(validGuesses)
