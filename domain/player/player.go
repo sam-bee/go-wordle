@@ -3,7 +3,6 @@ package player
 import (
 	"runtime"
 	"strings"
-	"sync"
 	"wordle/domain/game"
 	"wordle/domain/words"
 )
@@ -28,11 +27,6 @@ func (player Player) GetNextGuess(isSixthTurn bool) (words.Word, ProposedGuessEv
 	bestGuess := player.identifyBestPossibleGuess(player.ValidGuesses.Words)
 
 	return bestGuess.ProposedGuess, bestGuess
-}
-
-type proposedGuessEvaluationContainer struct {
-	mu    sync.Mutex
-	value []ProposedGuessEvaluation
 }
 
 func (player Player) EvaluatePossibleGuess(possibleGuess words.Word) ProposedGuessEvaluation {
@@ -87,7 +81,7 @@ func fanoutGuessEvaluation(potentialGuesses []words.Word) <-chan words.Word {
 	return fanoutChannel
 }
 
-func (player Player) evaluatePotentialGuesses(signalChannel <-chan struct{}, fanoutChannel <-chan words.Word) <-chan ProposedGuessEvaluation {
+func (player Player) evaluatePotentialGuesses(fanoutChannel <-chan words.Word) <-chan ProposedGuessEvaluation {
 	faninChannel := make(chan ProposedGuessEvaluation)
 	go func() {
 
@@ -106,36 +100,7 @@ func (player Player) evaluatePotentialGuesses(signalChannel <-chan struct{}, fan
 	return faninChannel
 }
 
-func mergeChannelsToMultiplex(signalChannel <-chan struct{}, faninChannels ...<-chan ProposedGuessEvaluation) <-chan ProposedGuessEvaluation {
-	var wg sync.WaitGroup
-
-	wg.Add(len(faninChannels))
-	multiplexChannel := make(chan ProposedGuessEvaluation)
-	multiplex := func(c <-chan ProposedGuessEvaluation) {
-		defer wg.Done()
-		for i := range c {
-			select {
-			case <-signalChannel:
-				return
-			case multiplexChannel <- i:
-			}
-		}
-	}
-	for _, c := range faninChannels {
-		go multiplex(c)
-	}
-	go func() {
-		wg.Wait()
-		close(multiplexChannel)
-	}()
-	return multiplexChannel
-}
-
 func (player Player) identifyBestPossibleGuess(validGuesses []words.Word) ProposedGuessEvaluation {
-
-	// To enable the workers to be shut down, create a signal channel to tell them when to stop
-	signalChannel := make(chan struct{})
-	defer close(signalChannel)
 
 	// To fan out the guesses to the workers, create a fan out channel
 	fanoutChannel := fanoutGuessEvaluation(validGuesses)
@@ -145,7 +110,7 @@ func (player Player) identifyBestPossibleGuess(validGuesses []words.Word) Propos
 	fanInChannels := make([]<-chan ProposedGuessEvaluation, noOfWorkers)
 
 	for i := 0; i < noOfWorkers; i++ {
-		fanInChannels[i] = player.evaluatePotentialGuesses(signalChannel, fanoutChannel)
+		fanInChannels[i] = player.evaluatePotentialGuesses(fanoutChannel)
 	}
 
 	// To identify the best guess from any of the workers, loop through their channels
