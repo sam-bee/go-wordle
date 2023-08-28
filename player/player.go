@@ -23,7 +23,7 @@ func (player *Player) GetNextGuess(lastTurn bool) (words.Word, GuessEvaluation) 
 	return bestGuess.Guess, bestGuess
 }
 
-func (player *Player) EvaluatePossibleGuess(guess words.Word) GuessEvaluation {
+func (player *Player) evaluatePossibleGuess(guess words.Word) GuessEvaluation {
 
 	ge := NewGuessEvaluation(guess, player.PossibleSolutions)
 
@@ -81,7 +81,7 @@ func (player *Player) evaluatePotentialGuesses(fanoutChannel <-chan words.Word) 
 		bestGuess := GuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
 
 		for word := range fanoutChannel {
-			evaluation := player.EvaluatePossibleGuess(word)
+			evaluation := player.evaluatePossibleGuess(word)
 			if evaluation.isBetterThan(bestGuess) {
 				bestGuess = evaluation
 			}
