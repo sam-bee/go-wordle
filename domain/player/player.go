@@ -68,13 +68,12 @@ func (player Player) GetPossibleSolutions() string {
 
 	return strings.Join(wordsAsStrings, ", ")
 }
+
 func fanoutGuessEvaluation(potentialGuesses []words.Word) <-chan words.Word {
 	fanoutChannel := make(chan words.Word)
 	go func() {
 		for _, potentialGuess := range potentialGuesses {
-			select {
-				case fanoutChannel <- potentialGuess:
-			}
+			fanoutChannel <- potentialGuess
 		}
 		close(fanoutChannel)
 	}()
