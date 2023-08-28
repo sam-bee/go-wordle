@@ -35,18 +35,12 @@ func playWordleGame(cmd *cobra.Command, solutionArgument string, writer io.Write
 
 	// To find out what our guesses might be, read guesses word list from file
 	fmt.Fprintln(writer, "Reading valid guesses from file...")
-	validGuessesWordList, err := words.GetValidGuessesWordList(writer)
-	if (err != nil) {
-		return err
-	}
+	validGuessesWordList := words.GetValidGuessesWordList()
 	fmt.Fprintf(writer, "Found %v words\n", words.Count(validGuessesWordList))
 
 	// To find out what the solution might be, read guesses word list from file
 	fmt.Fprintln(writer, "Reading valid solutions from file...")
-	validSolutionsWordList, err := words.GetValidSolutionsWordList(writer)
-	if (err != nil) {
-		return err
-	}
+	validSolutionsWordList := words.GetValidSolutionsWordList()
 	fmt.Fprintf(writer, "Found %v words\n", words.Count(validSolutionsWordList))
 
 	solution := words.MakeWord(solutionArgument)
