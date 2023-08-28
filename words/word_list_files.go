@@ -11,19 +11,23 @@ var guessesFile string
 //go:embed data/wordlist-valid-solutions.csv
 var solutionsFile string
 
-func GetValidGuessesWordList() (WordList) {
+func GetValidGuessesWordList() ([]Word, error) {
 	return makeWordListFromString(guessesFile)
 }
 
-func GetValidSolutionsWordList() (WordList) {
+func GetValidSolutionsWordList() ([]Word, error) {
 	return makeWordListFromString(solutionsFile)
 }
 
-func makeWordListFromString(s string) WordList {
+func makeWordListFromString(s string) ([]Word, error) {
 	lines := strings.Split(s, "\n")
-	words := make([]Word, 0)
+	wl := make([]Word, 0, len(lines))
 	for _, line := range lines {
-		words = append(words, MakeWord(line))
+		w, err := NewWord(line)
+		if (err != nil) {
+			return []Word{}, err
+		}
+		wl = append(wl, w)
 	}
-	return WordList{Words: words}
+	return wl, nil
 }

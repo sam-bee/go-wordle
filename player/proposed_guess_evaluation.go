@@ -18,13 +18,13 @@ type ProposedGuessEvaluation struct {
 func MakeProposedGuessEvaluation(
 	proposedGuess words.Word,
 	sizeOfCurrentShortlist int,
-	currrentShortlist words.WordList,
+	currrentShortlist []words.Word,
 ) ProposedGuessEvaluation {
 
 	isPotentialSolution := false
 
-	for _, wordInCurrentShortlist := range currrentShortlist.Words {
-		if wordInCurrentShortlist.String == (&proposedGuess).String {
+	for _, wordInCurrentShortlist := range currrentShortlist {
+		if wordInCurrentShortlist.String() == proposedGuess.String() {
 			isPotentialSolution = true
 		}
 	}
