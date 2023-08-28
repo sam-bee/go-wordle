@@ -28,7 +28,7 @@ func getFeedbackColour(solution words.Word, guess words.Word, index int) int {
 	}
 
 	for j := 0; j < len(solution.String()); j++ {
-		if solution.String()[j] == guess.String()[index] && j != index{
+		if solution.String()[j] == guess.String()[index] && j != index {
 			return yellow
 		}
 	}
@@ -40,12 +40,12 @@ func (f *Feedback) String() string {
 	feedbackString := ""
 	for _, colour := range f.colours {
 		switch colour {
-			case grey:
-				feedbackString += "-"
-			case yellow:
-				feedbackString += "Y"
-			case green:
-				feedbackString += "G"
+		case grey:
+			feedbackString += "-"
+		case yellow:
+			feedbackString += "Y"
+		case green:
+			feedbackString += "G"
 		}
 	}
 	return feedbackString

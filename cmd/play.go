@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
 	"io"
 	"wordle/game"
 	"wordle/player"
 	"wordle/words"
-	"github.com/spf13/cobra"
 )
 
 // playCmd represents the play command
@@ -101,7 +101,7 @@ func printEvaluation(writer io.Writer, evaluation player.ProposedGuessEvaluation
 		fmt.Fprintf(
 			writer, "Worst-case scenario for proposed guess is the feedback %q. Carry-over ratio for possible solutions list would be %.2f%%\n",
 			evaluation.GetWorstCaseScenarioFeedbackString(),
-			100 * evaluation.GetWorstCaseShortlistCarryOverRatio(),
+			100*evaluation.GetWorstCaseShortlistCarryOverRatio(),
 		)
 	}
 }

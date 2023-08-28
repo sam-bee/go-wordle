@@ -24,7 +24,7 @@ func makeWordList(s string) ([]Word, error) {
 	wl := make([]Word, 0, len(lines))
 	for _, line := range lines {
 		w, err := NewWord(line)
-		if (err != nil) {
+		if err != nil {
 			return []Word{}, err
 		}
 		wl = append(wl, w)
