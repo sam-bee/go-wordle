@@ -78,7 +78,7 @@ func (player Player) GetPossibleSolutions() string {
 
 	return strings.Join(wordsAsStrings, ", ")
 }
-func fanoutGuessEvaluation(signalChannel <-chan bool, potentialGuesses []words.Word) <-chan words.Word {
+func fanoutGuessEvaluation(signalChannel <-chan struct{}, potentialGuesses []words.Word) <-chan words.Word {
 	fanoutChannel := make(chan words.Word)
 	go func() {
 		for _, potentialGuess := range potentialGuesses {
@@ -93,7 +93,7 @@ func fanoutGuessEvaluation(signalChannel <-chan bool, potentialGuesses []words.W
 	return fanoutChannel
 }
 
-func (player Player) evaluatePotentialGuesses(signalChannel <-chan bool, fanoutChannel <-chan words.Word) <-chan ProposedGuessEvaluation {
+func (player Player) evaluatePotentialGuesses(signalChannel <-chan struct{}, fanoutChannel <-chan words.Word) <-chan ProposedGuessEvaluation {
 	faninChannel := make(chan ProposedGuessEvaluation)
 	go func() {
 		for potentialGuess := range fanoutChannel {
@@ -108,7 +108,7 @@ func (player Player) evaluatePotentialGuesses(signalChannel <-chan bool, fanoutC
 	return faninChannel
 }
 
-func mergeChannelsToMultiplex(signalChannel <-chan bool, faninChannels ...<-chan ProposedGuessEvaluation) <-chan ProposedGuessEvaluation {
+func mergeChannelsToMultiplex(signalChannel <-chan struct{}, faninChannels ...<-chan ProposedGuessEvaluation) <-chan ProposedGuessEvaluation {
 	var wg sync.WaitGroup
 
 	wg.Add(len(faninChannels))
@@ -136,7 +136,7 @@ func mergeChannelsToMultiplex(signalChannel <-chan bool, faninChannels ...<-chan
 func (player Player) fanOutFanIn(validGuesses []words.Word) ProposedGuessEvaluation {
 
 	// To enable the workers to be shut down, create a signal channel to tell them when to stop
-	signalChannel := make(chan bool)
+	signalChannel := make(chan struct{})
 	defer close(signalChannel)
 
 	// To fan out the guesses to the workers, create a fan out channel
