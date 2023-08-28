@@ -35,10 +35,6 @@ type proposedGuessEvaluationContainer struct {
 	value []ProposedGuessEvaluation
 }
 
-func (player Player) identifyBestPossibleGuess(validGuesses []words.Word) ProposedGuessEvaluation {
-	return player.fanOutFanIn(validGuesses)
-}
-
 func (player Player) EvaluatePossibleGuess(possibleGuess words.Word) ProposedGuessEvaluation {
 
 	proposedGuessEvaluation := MakeProposedGuessEvaluation(possibleGuess, player.PossibleSolutions.Count(), player.PossibleSolutions)
@@ -133,7 +129,7 @@ func mergeChannelsToMultiplex(signalChannel <-chan struct{}, faninChannels ...<-
 	return multiplexChannel
 }
 
-func (player Player) fanOutFanIn(validGuesses []words.Word) ProposedGuessEvaluation {
+func (player Player) identifyBestPossibleGuess(validGuesses []words.Word) ProposedGuessEvaluation {
 
 	// To enable the workers to be shut down, create a signal channel to tell them when to stop
 	signalChannel := make(chan struct{})
