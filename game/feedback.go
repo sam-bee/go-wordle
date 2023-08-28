@@ -1,7 +1,7 @@
 package game
 
 import (
-	"wordle/domain/words"
+	"wordle/words"
 )
 
 type FeedbackColour int

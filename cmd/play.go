@@ -5,9 +5,9 @@ import (
 	"io"
 	"github.com/spf13/cobra"
 	"strconv"
-	"wordle/domain/game"
-	"wordle/domain/player"
-	"wordle/domain/words"
+	"wordle/game"
+	"wordle/player"
+	"wordle/words"
 	"wordle/infrastructure"
 )
 

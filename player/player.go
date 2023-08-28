@@ -3,8 +3,8 @@ package player
 import (
 	"runtime"
 	"strings"
-	"wordle/domain/game"
-	"wordle/domain/words"
+	"wordle/game"
+	"wordle/words"
 )
 
 type Player struct {
