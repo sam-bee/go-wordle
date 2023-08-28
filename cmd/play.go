@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
 	"wordle/game"
 	"wordle/player"
 	"wordle/words"
+
+	"github.com/spf13/cobra"
 )
 
 // playCmd represents the play command
@@ -72,7 +73,7 @@ func playWordleGame(cmd *cobra.Command, solutionArgument string, writer io.Write
 	return nil
 }
 
-func takeGuess(guessNo int, player *player.Player, solution words.Word) (won bool, guess words.Word, feedback game.Feedback, evaluation player.ProposedGuessEvaluation) {
+func takeGuess(guessNo int, player *player.Player, solution words.Word) (won bool, guess words.Word, feedback game.Feedback, evaluation player.GuessEvaluation) {
 	guess, evaluation = player.GetNextGuess(guessNo == 6)
 	won = guess.String() == solution.String()
 	feedback = game.GetFeedback(solution, guess)
@@ -94,12 +95,12 @@ func printPreAnalysis(writer io.Writer, player player.Player) {
 	}
 }
 
-func printEvaluation(writer io.Writer, evaluation player.ProposedGuessEvaluation, player player.Player) {
+func printEvaluation(writer io.Writer, evaluation player.GuessEvaluation, player player.Player) {
 	fmt.Fprintf(writer, "The next guess should be %q\n", evaluation.Guess.String())
 
 	if player.GetNoOfPossibleSolutions() > 1 {
 		fmt.Fprintf(
-			writer, "Worst-case scenario for proposed guess is the feedback %q. Carry-over ratio for possible solutions list would be %.2f%%\n",
+			writer, "Worst-case scenario for guess is the feedback %q. Carry-over ratio for possible solutions list would be %.2f%%\n",
 			evaluation.GetWorstCaseScenarioFeedbackString(),
 			100*evaluation.GetWorstCaseShortlistCarryOverRatio(),
 		)

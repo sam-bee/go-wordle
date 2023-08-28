@@ -14,13 +14,13 @@ Wordle solution: SPARE
 
 There are currently 2309 possible solutions
 The next guess should be ARISE
-Worst-case scenario for proposed guess is the feedback -----. Carry-over ratio for possible solutions list would be 7.23%
+Worst-case scenario for guess is the feedback -----. Carry-over ratio for possible solutions list would be 7.23%
 Guess number 1: ARISE
 Feedback from guess was: YY-YG
 
 There are currently 5 possible solutions [SCARE, SHARE, SNARE, SPARE, STARE]
 The next guess should be CHANT
-Worst-case scenario for proposed guess is the feedback --G-Y. Carry-over ratio for possible solutions list would be 20.00%
+Worst-case scenario for guess is the feedback --G-Y. Carry-over ratio for possible solutions list would be 20.00%
 Guess number 2: CHANT
 Feedback from guess was: --G--
 
