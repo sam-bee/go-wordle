@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"wordle/domain/words"
+	"wordle/words"
 )
 
 const wordListValidGuessesFile = "./data/wordlist-valid-guesses.csv"

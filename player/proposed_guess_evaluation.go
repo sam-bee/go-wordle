@@ -2,8 +2,8 @@ package player
 
 import (
 	"fmt"
-	"wordle/domain/game"
-	"wordle/domain/words"
+	"wordle/game"
+	"wordle/words"
 )
 
 type ProposedGuessEvaluation struct {
