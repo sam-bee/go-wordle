@@ -8,12 +8,12 @@ type Word struct {
 	value string
 }
 
-func NewWord(value string) (w Word, err error) {
-	if len(value) != 5 {
-		return Word{}, fmt.Errorf("all words in a wordle game must be characters long, got '%s'", value)
+func NewWord(val string) (w Word, err error) {
+	if len(val) != 5 {
+		return Word{}, fmt.Errorf("all words in a wordle game must be characters long, got '%s'", val)
 	}
 
-	return Word{value: value}, nil
+	return Word{value: val}, nil
 }
 
 func (w *Word) String() string {

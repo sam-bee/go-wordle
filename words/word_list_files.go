@@ -12,14 +12,14 @@ var guessesFile string
 var solutionsFile string
 
 func GetValidGuessesWordList() ([]Word, error) {
-	return makeWordListFromString(guessesFile)
+	return makeWordList(guessesFile)
 }
 
 func GetValidSolutionsWordList() ([]Word, error) {
-	return makeWordListFromString(solutionsFile)
+	return makeWordList(solutionsFile)
 }
 
-func makeWordListFromString(s string) ([]Word, error) {
+func makeWordList(s string) ([]Word, error) {
 	lines := strings.Split(s, "\n")
 	wl := make([]Word, 0, len(lines))
 	for _, line := range lines {
