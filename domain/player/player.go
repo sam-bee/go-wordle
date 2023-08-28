@@ -90,13 +90,17 @@ func fanoutGuessEvaluation(potentialGuesses []words.Word) <-chan words.Word {
 func (player Player) evaluatePotentialGuesses(signalChannel <-chan struct{}, fanoutChannel <-chan words.Word) <-chan ProposedGuessEvaluation {
 	faninChannel := make(chan ProposedGuessEvaluation)
 	go func() {
-		for potentialGuess := range fanoutChannel {
-			select {
-			case <-signalChannel:
-				return
-			case faninChannel <- player.EvaluatePossibleGuess(potentialGuess):
+
+		bestGuessEvaluation := ProposedGuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
+
+		for proposedGuess := range fanoutChannel {
+			proposedGuessEvaluation := player.EvaluatePossibleGuess(proposedGuess)
+			if proposedGuessEvaluation.isBetterThan(bestGuessEvaluation) {
+				bestGuessEvaluation = proposedGuessEvaluation
 			}
 		}
+
+		faninChannel <- bestGuessEvaluation
 		close(faninChannel)
 	}()
 	return faninChannel
