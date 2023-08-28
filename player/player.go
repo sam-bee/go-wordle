@@ -25,7 +25,7 @@ func (player *Player) GetNextGuess(lastTurn bool) (words.Word, ProposedGuessEval
 
 func (player *Player) EvaluatePossibleGuess(guess words.Word) ProposedGuessEvaluation {
 
-	proposedGuessEvaluation := MakeProposedGuessEvaluation(guess, len(player.PossibleSolutions), player.PossibleSolutions)
+	proposedGuessEvaluation := MakeProposedGuessEvaluation(guess, player.PossibleSolutions)
 
 	for _, possibleSolution := range player.PossibleSolutions {
 		feedback := game.GetFeedback(possibleSolution, guess)
