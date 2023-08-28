@@ -25,10 +25,10 @@ func MakeProposedGuessEvaluation(guess words.Word, currrentShortlist []words.Wor
 	}
 
 	return ProposedGuessEvaluation{
-		Guess: guess,
-		shortlistSize: len(currrentShortlist),
+		Guess:                   guess,
+		shortlistSize:           len(currrentShortlist),
 		potentialFeedbackCounts: make(map[string]int),
-		isPotentialSolution: isPotentialSolution,
+		isPotentialSolution:     isPotentialSolution,
 	}
 }
 
@@ -74,9 +74,9 @@ func (proposedGuessEvaluation *ProposedGuessEvaluation) calculate() {
 	for potentialFeedbackString, potentialFeedbackCount := range proposedGuessEvaluation.potentialFeedbackCounts {
 
 		if potentialFeedbackCount > worst.count {
-			worst = worstCaseScenario {
+			worst = worstCaseScenario{
 				feedbackString: potentialFeedbackString,
-				count: potentialFeedbackCount,
+				count:          potentialFeedbackCount,
 			}
 		}
 
