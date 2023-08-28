@@ -4,51 +4,48 @@ import (
 	"wordle/words"
 )
 
-type FeedbackColour int
-
 const (
-	Green FeedbackColour = iota
-	Yellow
-	Grey
+	green int = iota
+	yellow
+	grey
 )
 
 type Feedback struct {
-	FeedbackColours [5]FeedbackColour
+	colours []int
 }
 
 func GetFeedback(solution words.Word, guess words.Word) Feedback {
-	feedbackColours := [5]FeedbackColour{}
-
-	for i := 0; i < 5; i++ {
-		feedbackColours[i] = getFeedbackColour(solution, guess, i)
+	colours := []int{}
+	for i := range solution.String() {
+		colours = append(colours, getFeedbackColour(solution, guess, i))
 	}
-	return Feedback{FeedbackColours: feedbackColours}
+	return Feedback{colours: colours}
 }
 
-func getFeedbackColour(solution words.Word, guess words.Word, index int) FeedbackColour {
+func getFeedbackColour(solution words.Word, guess words.Word, index int) int {
 	if solution.String()[index] == guess.String()[index] {
-		return Green
+		return green
 	}
 
 	for j := 0; j < len(solution.String()); j++ {
 		if solution.String()[j] == guess.String()[index] && j != index{
-			return Yellow
+			return yellow
 		}
 	}
 
-	return Grey
+	return grey
 }
 
 func (f *Feedback) String() string {
 	feedbackString := ""
-	for _, colour := range f.FeedbackColours {
+	for _, colour := range f.colours {
 		switch colour {
-		case Grey:
-			feedbackString += "-"
-		case Yellow:
-			feedbackString += "Y"
-		case Green:
-			feedbackString += "G"
+			case grey:
+				feedbackString += "-"
+			case yellow:
+				feedbackString += "Y"
+			case green:
+				feedbackString += "G"
 		}
 	}
 	return feedbackString
