@@ -5,64 +5,81 @@ import (
 	"wordle/words"
 )
 
-func TestChoosingBestWordToFindOutSolution(t *testing.T) {
+func TestChoosingGuess(t *testing.T) {
 
-	var validGuesses = []words.Word{"CHANT", "ZZZZZ"}
-	var validSolutions = []words.Word{"SCARE", "SHARE", "SNARE", "STARE"}
+	table := []struct {
+		name             string
+		inputIsLastGuess bool
+		inputGuesses     []words.Word
+		inputSolutions   []words.Word
+		expected         string
+		verboseError     string
+	}{
+		{
+			name:             "Basic",
+			inputIsLastGuess: false,
+			inputGuesses:     []words.Word{"CHANT", "ZZZZZ"},
+			inputSolutions:   []words.Word{"SCARE", "SHARE", "SNARE", "STARE"},
+			expected:         "CHANT",
+			verboseError:     "Guessing %q would have reduced the shortlist to a single correct soluion, but Player guessed %q instead",
+		},
+		{
+			name:             "Last turn",
+			inputIsLastGuess: true,
+			inputGuesses:     []words.Word{"CHANT", "SCARE"},
+			inputSolutions:   []words.Word{"SCARE", "SHARE", "SNARE", "STARE"},
+			expected:         "CHANT",
+			verboseError:     "Because it's the last guess, guessing %q might have won the game, but Player guessed %q, which can't win",
+		},
+	}
 
-	p := NewPlayer(validSolutions, validGuesses)
-
-	got, _ := p.GetNextGuess(false)
-	expected := "CHANT"
-
-	if got.String() != expected {
-		t.Errorf("Guessing %q would have successfully identified correct soluion, but Player guessed %q", expected, got)
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			p := NewPlayer(test.inputSolutions, test.inputGuesses)
+			got, _ := p.GetNextGuess(false)
+			if got.String() != test.expected {
+				t.Errorf(test.verboseError, test.expected, got)
+			}
+		})
 	}
 }
 
-func TestGuessingAPossibleSolutionOnLastTurn(t *testing.T) {
+func TestGuessEvaluation(t *testing.T) {
 
-	var validGuesses = []words.Word{"CHANT", "SCARE"}
-	var validSolutions = []words.Word{"SCARE", "SHARE", "SNARE", "STARE"}
-
-	p := NewPlayer(validSolutions, validGuesses)
-
-	got, _ := p.GetNextGuess(true)
-	expected := "SCARE"
-
-	if got.String() != expected {
-		t.Errorf("Because it's the last guess, guessing %q might have won the game, but Player guessed %q, which can't win", expected, got)
+	table := []struct {
+		name             string
+		inputIsLastGuess bool
+		inputGuesses     []words.Word
+		inputSolutions   []words.Word
+		expected         float64
+		verboseError     string
+	}{
+		{
+			name:             "Good guess",
+			inputIsLastGuess: false,
+			inputGuesses:     []words.Word{"CHANT"},
+			inputSolutions:   []words.Word{"SCARE", "SHARE", "SNARE", "SPARE", "STARE"},
+			expected:         0.2,
+			verboseError:     "It reduces the shortlist to %.2f times its previous length with a given guess, but it seems to think the carry-over ratio is %.2f",
+		},
+		{
+			name:             "Bad guess",
+			inputIsLastGuess: false,
+			inputGuesses:     []words.Word{"XXXXX"},
+			inputSolutions:   []words.Word{"SCARE", "SHARE", "SNARE", "STARE"},
+			expected:         1.0,
+			verboseError:     "If you force it to choose a really unhelpful guess, shortlist carry-over ratio is %.2f, but it thinks it is %.2f",
+		},
 	}
-}
 
-func TestItUnderstandsItIsReducingShortlist(t *testing.T) {
-
-	var validGuesses = []words.Word{"CHANT"}
-	var validSolutions = []words.Word{"SCARE", "SHARE", "SNARE", "SPARE", "STARE"}
-
-	p := NewPlayer(validSolutions, validGuesses)
-
-	_, evaluation := p.GetNextGuess(false)
-	got := evaluation.worstCaseShortlistCarryOverRatio
-	expected := 0.2
-
-	if got != expected {
-		t.Errorf("It reduces the shortlist by a factor of %.2f with a guess, but it seems to think the shortlist reduction is %.2f", expected, got)
-	}
-}
-
-func TestItUnderstandsBadGuessesDontReduceShortlist(t *testing.T) {
-
-	var validGuesses = []words.Word{"XXXXX"}
-	var validSolutions = []words.Word{"SCARE", "SHARE", "SNARE", "SPARE", "STARE"}
-
-	p := NewPlayer(validSolutions, validGuesses)
-
-	_, evaluation := p.GetNextGuess(false)
-	got := evaluation.worstCaseShortlistCarryOverRatio
-	expected := 1.0
-
-	if got != expected {
-		t.Errorf("If you force it to choose a really unhelpful guess, shortlist carry-over ratio is %.2f, but it thinks it is %.2f", expected, got)
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			p := NewPlayer(test.inputSolutions, test.inputGuesses)
+			_, evaluation := p.GetNextGuess(false)
+			got := evaluation.worstCaseShortlistCarryOverRatio
+			if got != test.expected {
+				t.Errorf(test.verboseError, test.expected, got)
+			}
+		})
 	}
 }
