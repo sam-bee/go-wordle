@@ -9,27 +9,32 @@ To play the game, run `go run ./cmd/main.go SPARE`, or with any other five-lette
 to a Wordle.
 
 ```
-go run cmd/play-wordle.go SPARE
-Wordle solution: SPARE
+go run main.go play SPARE
+Reading valid guesses from file...
+Found 12947 words
+Reading valid solutions from file...
+Found 2309 words
 
 There are currently 2309 possible solutions
-The next guess should be ARISE
-Worst-case scenario for guess is the feedback -----. Carry-over ratio for possible solutions list would be 7.23%
-Guess number 1: ARISE
-Feedback from guess was: YY-YG
+The next guess should be "RAISE"
+Worst-case scenario for guess is the feedback "-----". Carry-over ratio for possible solutions list would be 7.23%
+Guess number 1: "RAISE"
+Feedback from guess was: "YY-YG"
 
-There are currently 5 possible solutions [SCARE, SHARE, SNARE, SPARE, STARE]
-The next guess should be CHANT
-Worst-case scenario for guess is the feedback --G-Y. Carry-over ratio for possible solutions list would be 20.00%
-Guess number 2: CHANT
-Feedback from guess was: --G--
+There are currently 5 possible solutions
+The remaining possible solutions are: [SCARE, SHARE, SNARE, SPARE, STARE]
+The next guess should be "CHANT"
+Guess number 2: "NICHT"
+Feedback from guess was: "--G--"
 
-There are currently 1 possible solutions [SPARE]
-Guess number 3: SPARE
-Feedback from guess was: GGGGG
+There are currently 1 possible solutions
+The remaining possible solutions are: [SPARE]
+The next guess should be "SPARE"
+Guess number 3: "SPARE"
+Feedback from guess was: "GGGGG"
 
 Won the Wordle in 3 turns
-
+Finished!
 ```
 
 ## Wordlists
