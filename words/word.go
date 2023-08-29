@@ -4,18 +4,18 @@ import (
 	"fmt"
 )
 
-type Word struct {
-	value string
-}
+type Word string
 
-func NewWord(val string) (w Word, err error) {
+func NewWord(val string) (Word, error) {
 	if len(val) != 5 {
-		return Word{}, fmt.Errorf("all words in a wordle game must be characters long, got '%s'", val)
+		return "", fmt.Errorf("all words in a wordle game must be characters long, got '%s'", val)
 	}
+	var w = Word(val)
 
-	return Word{value: val}, nil
+	return w, nil
 }
 
 func (w *Word) String() string {
-	return w.value
+	var s = string(*w)
+	return s
 }
