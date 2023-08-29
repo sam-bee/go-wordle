@@ -75,14 +75,14 @@ func playWordleGame(cmd *cobra.Command, solutionArgument string, writer io.Write
 
 func takeGuess(guessNo int, player *player.Player, solution words.Word) (won bool, guess words.Word, feedback game.Feedback, evaluation player.GuessEvaluation) {
 	guess, evaluation = player.GetNextGuess(guessNo == 6)
-	won = guess.String() == solution.String()
+	won = guess.Equals(solution)
 	feedback = game.GetFeedback(solution, guess)
 	player.TakeFeedbackFromGuess(guess, feedback)
 	return
 }
 
 func printTurn(writer io.Writer, guess words.Word, feedback game.Feedback, guessNo int) {
-	fmt.Fprintf(writer, "Guess number %d: %q\n", guessNo, guess.String())
+	fmt.Fprintf(writer, "Guess number %d: %q\n", guessNo, guess)
 	fmt.Fprintf(writer, "Feedback from guess was: %q\n", feedback.String())
 	fmt.Fprintln(writer)
 }
@@ -96,7 +96,7 @@ func printPreAnalysis(writer io.Writer, player player.Player) {
 }
 
 func printEvaluation(writer io.Writer, evaluation player.GuessEvaluation, player player.Player) {
-	fmt.Fprintf(writer, "The next guess should be %q\n", evaluation.Guess.String())
+	fmt.Fprintf(writer, "The next guess should be %q\n", evaluation.Guess)
 
 	if player.ShortlistLength() > 1 {
 		fmt.Fprintf(

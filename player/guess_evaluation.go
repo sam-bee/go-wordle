@@ -17,7 +17,7 @@ func NewGuessEvaluation(guess words.Word, currrentShortlist []words.Word) GuessE
 	isPotentialSolution := false
 
 	for _, wordInCurrentShortlist := range currrentShortlist {
-		if wordInCurrentShortlist.String() == guess.String() {
+		if wordInCurrentShortlist.Equals(guess) {
 			isPotentialSolution = true
 		}
 	}

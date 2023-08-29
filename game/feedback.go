@@ -16,19 +16,19 @@ type Feedback struct {
 
 func GetFeedback(solution words.Word, guess words.Word) Feedback {
 	colours := []int{}
-	for i := range solution.String() {
+	for i := range solution {
 		colours = append(colours, getFeedbackColour(solution, guess, i))
 	}
 	return Feedback{colours: colours}
 }
 
 func getFeedbackColour(solution words.Word, guess words.Word, index int) int {
-	if solution.String()[index] == guess.String()[index] {
+	if solution[index] == guess[index] {
 		return green
 	}
 
-	for j := 0; j < len(solution.String()); j++ {
-		if solution.String()[j] == guess.String()[index] && j != index {
+	for j := 0; j < len(solution); j++ {
+		if solution[j] == guess[index] && j != index {
 			return yellow
 		}
 	}

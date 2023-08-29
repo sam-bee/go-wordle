@@ -15,7 +15,6 @@ func NewWord(val string) (Word, error) {
 	return w, nil
 }
 
-func (w *Word) String() string {
-	var s = string(*w)
-	return s
+func (w *Word) Equals(another Word) bool {
+	return *w == another
 }

@@ -12,11 +12,16 @@ func TestConstructorPreventsInvalidState(t *testing.T) {
 	}
 }
 
-func TestStringConversion(t *testing.T) {
+func TestEquals(t *testing.T) {
 	w, _ := NewWord("SPARE")
-	res := w.String()
+	same, _ := NewWord("SPARE")
+	different, _ := NewWord("MONEY")
 
-	if res != "SPARE" {
-		t.Errorf("String conversion failed, expected 'SPARE', got '%s'", res)
+	if !w.Equals(same) {
+		t.Errorf("String equality check failed with %q and %q", w, same)
+	}
+
+	if w.Equals(different) {
+		t.Errorf("String equality check failed with %q and %q", w, different)
 	}
 }
