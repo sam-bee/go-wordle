@@ -101,7 +101,7 @@ func printEvaluation(writer io.Writer, evaluation player.GuessEvaluation, player
 	if player.ShortlistLength() > 1 {
 		fmt.Fprintf(
 			writer, "Worst-case scenario for guess is the feedback %q. Carry-over ratio for possible solutions list would be %.2f%%\n",
-			evaluation.GetWorstCaseScenarioFeedbackString(),
+			evaluation.GetWorstCaseFeedback(),
 			100*evaluation.GetWorstCaseShortlistCarryOverRatio(),
 		)
 	}
