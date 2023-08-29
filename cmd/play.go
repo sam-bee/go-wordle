@@ -41,21 +41,21 @@ func playWordleGame(cmd *cobra.Command, solutionArgument string, writer io.Write
 
 	// To find out what our guesses might be, read guesses word list from file
 	fmt.Fprintln(writer, "Reading valid guesses from file...")
-	validGuessesWordList, err := words.GetValidGuessesWordList()
+	validGuesses, err := words.GetValidGuesses()
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(writer, "Found %d words\n", len(validGuessesWordList))
+	fmt.Fprintf(writer, "Found %d words\n", len(validGuesses))
 
 	// To find out what the solution might be, read guesses word list from file
 	fmt.Fprintln(writer, "Reading valid solutions from file...")
-	validSolutionsWordList, err := words.GetValidSolutionsWordList()
+	validSolutions, err := words.GetValidSolutions()
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(writer, "Found %d words\n\n", len(validSolutionsWordList))
+	fmt.Fprintf(writer, "Found %d words\n\n", len(validSolutions))
 
-	player := player.Player{PossibleSolutions: validSolutionsWordList, ValidGuesses: validGuessesWordList}
+	player := player.NewPlayer(validSolutions, validGuesses)
 
 	turn := 1
 	won := false
@@ -88,8 +88,8 @@ func printTurn(writer io.Writer, guess words.Word, feedback game.Feedback, guess
 }
 
 func printPreAnalysis(writer io.Writer, player player.Player) {
-	noOfPossibleSolutions := player.GetNoOfPossibleSolutions()
-	fmt.Fprintf(writer, "There are currently %d possible solutions\n", player.GetNoOfPossibleSolutions())
+	noOfPossibleSolutions := player.ShortlistLength()
+	fmt.Fprintf(writer, "There are currently %d possible solutions\n", player.ShortlistLength())
 	if noOfPossibleSolutions <= 10 {
 		fmt.Fprintf(writer, "The remaining possible solutions are: [%s]\n", player.GetPossibleSolutions())
 	}
@@ -98,7 +98,7 @@ func printPreAnalysis(writer io.Writer, player player.Player) {
 func printEvaluation(writer io.Writer, evaluation player.GuessEvaluation, player player.Player) {
 	fmt.Fprintf(writer, "The next guess should be %q\n", evaluation.Guess.String())
 
-	if player.GetNoOfPossibleSolutions() > 1 {
+	if player.ShortlistLength() > 1 {
 		fmt.Fprintf(
 			writer, "Worst-case scenario for guess is the feedback %q. Carry-over ratio for possible solutions list would be %.2f%%\n",
 			evaluation.GetWorstCaseScenarioFeedbackString(),
