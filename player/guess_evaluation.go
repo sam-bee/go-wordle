@@ -9,8 +9,6 @@ type GuessEvaluation struct {
 	Guess                            words.Word
 	shortlistSize                    int
 	potentialFeedbackCounts          map[string]int
-	worstCaseScenarioFeedbackString  string
-	worstCaseShortlistCarryOverRatio float64
 	isPotentialSolution              bool
 }
 
@@ -32,22 +30,12 @@ func NewGuessEvaluation(guess words.Word, currrentShortlist []words.Word) GuessE
 	}
 }
 
+func NewEmptyEvaluation() GuessEvaluation {
+	return GuessEvaluation{}
+}
+
 func (ge *GuessEvaluation) AddPossibleOutcome(possibleSolution words.Word, feedback game.Feedback) {
 	ge.potentialFeedbackCounts[feedback.String()] += 1
-}
-
-func (ge *GuessEvaluation) GetWorstCaseScenarioFeedbackString() string {
-	if ge.worstCaseScenarioFeedbackString == "" {
-		ge.calculate()
-	}
-	return ge.worstCaseScenarioFeedbackString
-}
-
-func (ge *GuessEvaluation) GetWorstCaseShortlistCarryOverRatio() float64 {
-	if ge.worstCaseShortlistCarryOverRatio == 0.0 {
-		ge.calculate()
-	}
-	return ge.worstCaseShortlistCarryOverRatio
 }
 
 func (ge *GuessEvaluation) isBetterThan(another GuessEvaluation) bool {
@@ -63,25 +51,25 @@ func (ge *GuessEvaluation) isBetterThan(another GuessEvaluation) bool {
 	return false
 }
 
-func (ge *GuessEvaluation) calculate() {
+func (ge *GuessEvaluation) GetWorstCaseFeedback() string {
+	worstCaseFeedbackCount := 0
+	var worstCaseFeedback string
 
-	type worstCaseScenario struct {
-		feedbackString string
-		count          int
-	}
-	worst := worstCaseScenario{}
+	for feedback, feedbackCount := range ge.potentialFeedbackCounts {
 
-	for potentialFeedbackString, potentialFeedbackCount := range ge.potentialFeedbackCounts {
-
-		if potentialFeedbackCount > worst.count {
-			worst = worstCaseScenario{
-				feedbackString: potentialFeedbackString,
-				count:          potentialFeedbackCount,
-			}
+		if feedbackCount > worstCaseFeedbackCount {
+			worstCaseFeedbackCount = feedbackCount
+			worstCaseFeedback = feedback
 		}
-
 	}
 
-	ge.worstCaseShortlistCarryOverRatio = float64(worst.count) / float64(ge.shortlistSize)
-	ge.worstCaseScenarioFeedbackString = worst.feedbackString
+	return worstCaseFeedback
+}
+
+func (ge *GuessEvaluation) GetWorstCaseShortlistCarryOverRatio() float64 {
+	worstCase := ge.GetWorstCaseFeedback()
+	if worstCase == "" || ge.shortlistSize == 0 {
+		return 1
+	}
+	return float64(ge.potentialFeedbackCounts[worstCase]) / float64(ge.shortlistSize)
 }

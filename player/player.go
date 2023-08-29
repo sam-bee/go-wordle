@@ -82,7 +82,7 @@ func (p *Player) evaluateGuesses(fanoutChannel <-chan words.Word) <-chan GuessEv
 	faninChannel := make(chan GuessEvaluation)
 	go func() {
 
-		bestGuess := GuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
+		bestGuess := NewEmptyEvaluation()
 
 		for word := range fanoutChannel {
 			evaluation := p.evaluateGuess(word)
@@ -111,7 +111,7 @@ func (player *Player) identifyBestPossibleGuess(validGuesses []words.Word) Guess
 	}
 
 	// To identify the best guess from any of the workers, loop through their channels
-	best := GuessEvaluation{worstCaseShortlistCarryOverRatio: 1.0}
+	best := NewEmptyEvaluation()
 	for i := range fanInChannels {
 		for guess := range fanInChannels[i] {
 			if guess.isBetterThan(best) {
