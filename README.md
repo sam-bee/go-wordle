@@ -5,7 +5,7 @@ Javascript, and presents the results. The actual player is still in progress.
 
 ## Playing the Game
 
-To play the game, run `go run ./cmd/main.go SPARE`, or with any other five-letter word that is a valid solution
+To play the game, run `go run ./main.go SPARE`, or with any other five-letter word that is a valid solution
 to a Wordle.
 
 ```
