@@ -11,11 +11,11 @@ var guessesFile string
 //go:embed data/wordlist-valid-solutions.csv
 var solutionsFile string
 
-func GetValidGuessesWordList() ([]Word, error) {
+func GetValidGuesses() ([]Word, error) {
 	return makeWordList(guessesFile)
 }
 
-func GetValidSolutionsWordList() ([]Word, error) {
+func GetValidSolutions() ([]Word, error) {
 	return makeWordList(solutionsFile)
 }
 
