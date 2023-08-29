@@ -5,18 +5,22 @@ import (
 )
 
 func TestValidGuessesReadCorrectly(t *testing.T) {
-	wl, _ := GetValidGuesses()
-	testWordList(t, wl, 12947, "AAHED")
+	wl, err := GetValidGuesses()
+	wordListShouldBeAsExpected(t, wl, 12947, "AAHED", err)
 }
 
 func TestValidSolutionsReadCorrectly(t *testing.T) {
-	wl, _ := GetValidSolutions()
-	testWordList(t, wl, 2309, "ABACK")
+	wl, err := GetValidSolutions()
+	wordListShouldBeAsExpected(t, wl, 2309, "ABACK", err)
 }
 
-func testWordList(t *testing.T, wl []Word, expectedLength int, expectedFirst string) {
+func wordListShouldBeAsExpected(t *testing.T, wl []Word, expectedLength int, expectedFirst string, err error) {
 	gotLength := len(wl)
 	gotFirst := wl[0].String()
+
+	if err != nil {
+		t.Errorf("Error reading word list: %s", err)
+	}
 
 	if gotLength != expectedLength {
 		t.Errorf("Expected %d words, got %d", expectedLength, gotLength)

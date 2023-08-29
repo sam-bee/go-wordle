@@ -6,10 +6,10 @@ import (
 )
 
 type GuessEvaluation struct {
-	Guess                            words.Word
-	shortlistSize                    int
-	potentialFeedbackCounts          map[string]int
-	isPotentialSolution              bool
+	Guess                   words.Word
+	shortlistSize           int
+	potentialFeedbackCounts map[string]int
+	isPotentialSolution     bool
 }
 
 func NewGuessEvaluation(guess words.Word, currrentShortlist []words.Word) GuessEvaluation {
