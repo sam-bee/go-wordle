@@ -76,7 +76,7 @@ func TestGuessEvaluation(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			p := NewPlayer(test.inputSolutions, test.inputGuesses)
 			_, evaluation := p.GetNextGuess(false)
-			got := evaluation.worstCaseShortlistCarryOverRatio
+			got := evaluation.GetWorstCaseShortlistCarryOverRatio()
 			if got != test.expected {
 				t.Errorf(test.verboseError, test.expected, got)
 			}
