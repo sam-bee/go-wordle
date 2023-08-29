@@ -37,7 +37,7 @@ func TestChoosingGuess(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			p := NewPlayer(test.inputSolutions, test.inputGuesses)
 			got, _ := p.GetNextGuess(false)
-			if got.String() != test.expected {
+			if !got.Equals(words.Word(test.expected)) {
 				t.Errorf(test.verboseError, test.expected, got)
 			}
 		})

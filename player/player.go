@@ -58,13 +58,11 @@ func (p *Player) ShortlistLength() int {
 }
 
 func (p *Player) GetPossibleSolutions() string {
-
-	var words []string
-	for _, word := range p.solutionShortlist {
-		words = append(words, word.String())
+	var w []string
+	for _, wo := range p.solutionShortlist {
+		w = append(w, string(wo))
 	}
-
-	return strings.Join(words, ", ")
+	return strings.Join(w, ", ")
 }
 
 func fanoutGuessEvaluation(potentialGuesses []words.Word) <-chan words.Word {
