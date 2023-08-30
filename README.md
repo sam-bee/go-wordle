@@ -39,5 +39,5 @@ Finished!
 
 ## Wordlists
 
-`./data/wordlist-valid-guesses.csv` and `./data/wordlist-valid-solutions.csv` are the input files. They are taken from
+`./words/data/wordlist-valid-guesses.csv` and `./words/data/wordlist-valid-solutions.csv` are the input files. They are taken from
 the New York Times website's Javascript.
